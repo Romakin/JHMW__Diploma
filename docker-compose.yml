@@ -1,0 +1,29 @@
+version: "2.1"
+
+networks:
+  test:
+
+services:
+  app:
+    build:
+      context: ./syncBox
+      dockerfile: ./Dockerfile
+    ports:
+      - "5500:5500"
+    networks:
+      - test
+
+  front:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    command: nodemon app.js
+    volumes:
+      - ./:/opt/project
+      - /opt/project/node_modules/
+    ports:
+      - "8080:8080"
+    environment:
+      - RUN_ENV=docker_dev_env
+    networks:
+      - test

@@ -1,11 +1,14 @@
 package org.home.syncBox.security.jwt;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Date;
 
+@AllArgsConstructor
 public class JwtUser implements UserDetails {
 
     private final Long id;
@@ -16,61 +19,71 @@ public class JwtUser implements UserDetails {
     private final String email;
     private final boolean enabled;
     private final Date lastPasswordResetDate;
+    private final Long lastEnter;
     private final Collection<? extends GrantedAuthority> authorities;
-
-
-    public JwtUser(Long id,
-                   String username,
-                   String firstName,
-                   String lastName,
-                   String password,
-                   String email,
-                   boolean enabled,
-                   Date lastPasswordResetDate,
-                   Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.email = email;
-        this.enabled = enabled;
-        this.lastPasswordResetDate = lastPasswordResetDate;
-        this.authorities = authorities;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return authorities;
     }
 
+    @JsonIgnore
+    public Long getId() {
+        return id;
+    }
+
+    @JsonIgnore
+    public Long getLastEnter() { return lastEnter; }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    @JsonIgnore
+    public Date getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+
+    @JsonIgnore
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
-        return null;
+        return username;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return enabled;
     }
 }

@@ -5,25 +5,27 @@ import org.home.syncBox.model.Role;
 import org.home.syncBox.model.Status;
 import org.home.syncBox.model.User;
 import org.home.syncBox.repository.RoleRepository;
-import org.home.syncBox.repository.UserRepository;
 import org.home.syncBox.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final org.home.syncBox.repository.UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
+    //@Autowired
+    public UserServiceImpl(org.home.syncBox.repository.UserRepository userRepository, RoleRepository roleRepository, @Lazy BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -47,6 +49,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User update(User user) {
+        if (user.getRoles().size() == 0)
+            user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
+
+        log.info("IN update - user: {} successfully updated", user);
+
+        return userRepository.save(user);
+    }
+
+
+    @Override
     public List<User> getAll() {
         List<User> result = userRepository.findAll();
         log.info("IN getAll - {} userf found", result.size());
@@ -54,10 +67,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> allUsers(int pageNum, int page_size) {
+        Pageable pageWithSomeElements = PageRequest.of(pageNum, page_size);
+        return userRepository.findAll(pageWithSomeElements).getContent();
+    }
+
+    @Override
     public User findByUsername(String username) {
-        User result = userRepository.findByUsername(username);
+        User result = userRepository.findByUsername(username).orElse(null);
         log.info("IN findByUsername - user: {} find by username: {}", result, username);
         return result;
+    }
+
+    @Override
+    public void setLastEnter(Long userId, Long lastEnter) {
+        userRepository.setLastEnter(userId, lastEnter);
     }
 
     @Override

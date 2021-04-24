@@ -2,8 +2,9 @@ package org.home.syncBox.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.home.syncBox.model.User;
+import org.home.syncBox.security.jwt.JwtUser;
+import org.home.syncBox.security.jwt.JwtUserFactory;
 import org.home.syncBox.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,11 +16,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     private final UserService userService;
 
-    @Autowired
     public JwtUserDetailsService(UserService userService) {
         this.userService = userService;
     }
-
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -29,8 +28,9 @@ public class JwtUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User with username" + username + " not found");
         }
 
+        JwtUser jwtUser = JwtUserFactory.create(user);
+        log.info("IN loadUserByUsername - user with username : {} successfully loaded", username);
 
-
-        return null;
+        return jwtUser;
     }
 }

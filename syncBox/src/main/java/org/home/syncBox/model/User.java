@@ -3,6 +3,7 @@ package org.home.syncBox.model;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -10,7 +11,8 @@ import java.util.List;
 @Data
 public class User extends BaseEntity {
 
-    @Column(name = "username")
+    @Column(name = "username", unique=true)
+    @Size(min = 3, message = "Min 5 characters")
     private String username;
 
     @Column(name = "first_name")
@@ -22,8 +24,12 @@ public class User extends BaseEntity {
     @Column(name = "email")
     private String email;
 
+    //@Transient
     @Column(name = "password")
     private String password;
+
+    @Column(name= "Last_enter", columnDefinition = "bigint default 1")
+    private long lastEnter;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
