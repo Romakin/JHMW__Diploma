@@ -10,15 +10,13 @@ public interface UserService {
 
     User update(User user);
 
-    List<User> getAll();
+    List<User> getAllUsers(int pageNum, int pageSize);
 
-    List<User> allUsers(int pageNum, int page_size);
-
-    User findByUsername(String username);
+    User getByUsername(String username);
 
     void setLastEnter(Long userId, Long lastEnter);
 
-    User findById(Long id);
+    User getById(Long id);
 
     void delete(Long id);
 }

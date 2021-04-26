@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
@@ -32,9 +31,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTokenProvider jwtTokenProvider;
 
     private static final String ADMIN_ENDPOINTS = "/api/v1/admin/**",
-                                LOGIN_ENDPOINT = "/cloud/login",
-                                USER_ENDPOINT = "/cloud/**",
-                                DB_CONSOLE_ENDPOINT = "/h2-console/**";
+            LOGIN_ENDPOINT = "/cloud/login",
+            USER_ENDPOINT = "/cloud/**",
+            DB_CONSOLE_ENDPOINT = "/h2-console/**";
 
     @Value("${server.cors.originFromHeader.label}")
     private String corsOriginFromHeaderLabel;
@@ -83,7 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         for (String corsAllowedMethod : corsAllowedMethods) {
             try {
                 cc.addAllowedMethod(HttpMethod.valueOf(corsAllowedMethod));
-            } catch (IllegalArgumentException e) {}
+            } catch (IllegalArgumentException e) {
+            }
         }
         List<String> list = new ArrayList<>();
         for (String s : corsAllowedOrigins) {

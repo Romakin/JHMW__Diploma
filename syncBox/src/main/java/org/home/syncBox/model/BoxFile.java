@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 
 @NoArgsConstructor
-//@Builder
+@SuperBuilder
 @Entity
 @Table(name = "box_files")
 @Data
@@ -17,12 +18,8 @@ public class BoxFile extends BaseEntity {
     @Column(name = "original_filename")
     String originalName;
 
-    @Column(name = "name", unique=true)
+    @Column(name = "name", unique = true)
     String name;
-
-//    @Lob
-//    @Column(name = "content")
-//    byte[] content;
 
     @Column(name = "hash")
     String hash;

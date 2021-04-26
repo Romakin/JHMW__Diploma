@@ -28,12 +28,11 @@ public class FileSystemRepository {
         return Files.deleteIfExists(file);
     }
 
-     public FileSystemResource findInFileSystem(String location) {
+    public FileSystemResource findInFileSystem(String location) {
         try {
             return new FileSystemResource(Paths.get(location));
         } catch (Exception ex) {
             // Handle access or file not found problems.
-//            throw new RuntimeException();
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Actor Not Found", ex);
         }

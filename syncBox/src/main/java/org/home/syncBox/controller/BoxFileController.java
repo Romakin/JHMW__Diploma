@@ -27,10 +27,9 @@ public class BoxFileController {
     BoxFileLocationService locationService;
 
     @PostMapping
-    ResponseEntity uploadBoxFile(@RequestParam("filename") String filename,
+    void uploadBoxFile(@RequestParam("filename") String filename,
                                  @RequestParam("file") MultipartFile multipartFile) throws Exception {
         locationService.save(multipartFile.getBytes(), filename, multipartFile.getOriginalFilename());
-        return ResponseEntity.ok(null);
     }
 
     @GetMapping
@@ -46,26 +45,24 @@ public class BoxFileController {
     }
 
     @DeleteMapping
-    ResponseEntity delete(@RequestParam String filename) throws Exception {
+    void delete(@RequestParam String filename) throws Exception {
         locationService.delete(filename);
-        return ResponseEntity.ok(null);
     }
 
     @DeleteMapping(value = "/clear")
     @PreAuthorize("hasRole('ADMIN')")
-    ResponseEntity clear(@RequestParam String filename) throws Exception {
+    void clear(@RequestParam String filename) throws Exception {
         locationService.clear(filename);
-        return new ResponseEntity(HttpStatus.OK);
     }
 
     @PutMapping
     ResponseEntity editFilename(@RequestParam String filename, @RequestBody Map<String, String> newFilenameMap) throws FileNotFoundException {
-        if (newFilenameMap.containsKey("filename")){
+        if (newFilenameMap.containsKey("filename")) {
             String acceptedFileName = locationService.setNewFilename(filename, newFilenameMap.get("filename"));
             newFilenameMap.remove("filename");
             newFilenameMap.put("name", acceptedFileName);
             return ResponseEntity.ok(newFilenameMap);
-        } else  {
+        } else {
             throw new InvalidParameterException("Invalid parameters");
         }
     }

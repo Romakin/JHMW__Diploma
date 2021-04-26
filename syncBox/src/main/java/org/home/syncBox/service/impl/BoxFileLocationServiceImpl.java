@@ -8,6 +8,7 @@ import org.home.syncBox.repository.BoxFileDbRepository;
 import org.home.syncBox.repository.FileSystemRepository;
 import org.home.syncBox.repository.UserRepository;
 import org.home.syncBox.service.BoxFileLocationService;
+import org.home.syncBox.service.utils.BoxFileLoactionUtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -33,11 +34,9 @@ import java.util.List;
 @Slf4j
 public class BoxFileLocationServiceImpl implements BoxFileLocationService {
 
-    final FileSystemRepository fileSystemRepository;
-
-    final BoxFileDbRepository dbRepository;
-
-    final UserRepository userRepository;
+    private final FileSystemRepository fileSystemRepository;
+    private final BoxFileDbRepository dbRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public BoxFileLocationServiceImpl(FileSystemRepository fileSystemRepository, BoxFileDbRepository dbRepository, UserRepository userRepository) {
@@ -49,17 +48,17 @@ public class BoxFileLocationServiceImpl implements BoxFileLocationService {
     @Override
     public Long save(byte[] bytes, String fileName, String originalName) throws IOException, NoSuchAlgorithmException {
         String location = fileSystemRepository.save(bytes, fileName);
-        BoxFile boxFile = new BoxFile();
-        boxFile.setName(fileName);
-        boxFile.setLocation(location);
-        boxFile.setSize((long) (Long.valueOf(bytes.length) / 1024.0));
-        boxFile.setHumanSize(humanReadableByteCountBin(bytes.length));
-        boxFile.setHash(SHAsum(bytes));
-        boxFile.setOriginalName(originalName);
-        boxFile.setUser(getUser());
-        boxFile.setCreated(new Date());
-        boxFile.setUpdated(new Date());
-        boxFile.setStatus(Status.ACTIVE);
+        BoxFile boxFile = BoxFile.builder()
+                .name(fileName)
+                .location(location)
+                .size((long) (Long.valueOf(bytes.length) / 1024.0))
+                .humanSize(BoxFileLoactionUtilsService.humanReadableByteCountBin(bytes.length))
+                .hash(BoxFileLoactionUtilsService.SHAsum(bytes))
+                .originalName(originalName)
+                .user(getUser())
+                .created(new Date())
+                .updated(new Date())
+                .status(Status.ACTIVE).build();
         return dbRepository.save(boxFile).getId();
     }
 
@@ -81,12 +80,13 @@ public class BoxFileLocationServiceImpl implements BoxFileLocationService {
     }
 
     @Override
-    public void clear(String filename) throws FileNotFoundException, IOException {
+    public void clear(String filename) throws IOException {
         BoxFile boxFile = dbRepository.getBoxFileByName(filename)
                 .orElseThrow(FileNotFoundException::new);
-        dbRepository.delete(boxFile);
-        if(!fileSystemRepository.remove(boxFile.getLocation()))
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        if (fileSystemRepository.remove(boxFile.getLocation()))
+            dbRepository.delete(boxFile);
+        else
+            throw new FileNotFoundException();
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BoxFileLocationServiceImpl implements BoxFileLocationService {
     @Override
     public List<BoxFile> getList(int limit) {
         Pageable pageWithSomeElements = PageRequest.of(0, limit);
-        return dbRepository.getBoxFileByUsernameAndStatusPageable(getUser(), Status.ACTIVE, pageWithSomeElements);
+        return dbRepository.findBoxFileByUserUsernameAndStatus(getUser().getUsername(), Status.ACTIVE, pageWithSomeElements);
     }
 
     @Override
@@ -114,26 +114,5 @@ public class BoxFileLocationServiceImpl implements BoxFileLocationService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
-    private String humanReadableByteCountBin(long bytes) {
-        long absB = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
-        if (absB < 1024) {
-            return bytes + " B";
-        }
-        long value = absB;
-        CharacterIterator ci = new StringCharacterIterator("KMGTPE");
-        for (int i = 40; i >= 0 && absB > 0xfffccccccccccccL >> i; i -= 10) {
-            value >>= 10;
-            ci.next();
-        }
-        value *= Long.signum(bytes);
-        return String.format("%.1f %ciB", value / 1024.0, ci.current());
-    }
 
-    private String SHAsum(byte[] bytes) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
-        Formatter formatter = new Formatter();
-        for (byte b : md.digest(bytes))
-            formatter.format("%02x", b);
-        return formatter.toString();
-    }
 }

@@ -14,11 +14,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
+
+    private static final String DEFAULT_USER_ROLE_NAME = "ROLE_USER";
 
     private final org.home.syncBox.repository.UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -33,12 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(User user) {
-        Role roleUser = roleRepository.findByName("ROLE_USER");
-        List<Role> userRoles = new ArrayList<>();
-        userRoles.add(roleUser);
-
+        Role roleUser = roleRepository.findByName(DEFAULT_USER_ROLE_NAME);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(userRoles);
+        user.setRoles(Collections.singletonList(roleUser));
         user.setStatus(Status.ACTIVE);
 
         User registeredUser = userRepository.save(user);
@@ -60,20 +60,13 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public List<User> getAll() {
-        List<User> result = userRepository.findAll();
-        log.info("IN getAll - {} userf found", result.size());
-        return result;
-    }
-
-    @Override
-    public List<User> allUsers(int pageNum, int page_size) {
-        Pageable pageWithSomeElements = PageRequest.of(pageNum, page_size);
+    public List<User> getAllUsers(int pageNum, int pageSize) {
+        Pageable pageWithSomeElements = PageRequest.of(pageNum, pageSize);
         return userRepository.findAll(pageWithSomeElements).getContent();
     }
 
     @Override
-    public User findByUsername(String username) {
+    public User getByUsername(String username) {
         User result = userRepository.findByUsername(username).orElse(null);
         log.info("IN findByUsername - user: {} find by username: {}", result, username);
         return result;
@@ -85,7 +78,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(Long id) {
+    public User getById(Long id) {
         User result = userRepository.findById(id).orElse(null);
 
         if (result == null) {

@@ -18,6 +18,8 @@ interface BoxFileDbRepository extends JpaRepository<BoxFile, Long> {
 
     Optional<BoxFile> getBoxFileByName(String s);
 
-    @Query("select bf from BoxFile bf WHERE bf.user = :user and bf.status = :status")
-    List<BoxFile> getBoxFileByUsernameAndStatusPageable(@Param("user") User user, @Param("status") Status status, Pageable pageable);
+//    @Query("select bf from BoxFile bf WHERE bf.user = :user and bf.status = :status")
+//    List<BoxFile> getBoxFileByUsernameAndStatusPageable(@Param("user") User user, @Param("status") Status status, Pageable pageable);
+
+    List<BoxFile> findBoxFileByUserUsernameAndStatus(String username, Status status, Pageable pageable);
 }

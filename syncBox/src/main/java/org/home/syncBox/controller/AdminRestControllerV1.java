@@ -27,21 +27,21 @@ public class AdminRestControllerV1 {
 
     @GetMapping(value = "users/{id}")
     public ResponseEntity<User> getUserById(@PathVariable(name = "id") Long id) {
-        User user = userService.findById(id);
+        User user = userService.getById(id);
         if (user == null)
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping(value = "users/{size}/{pageNum}")
-    public ResponseEntity getUsersWithPagingAndSize(@PathVariable(name = "size") int size, @PathVariable(name = "pageNum") int pageNum ) {
-        List<User> users = userService.allUsers(pageNum, size);
+    public ResponseEntity getUsersWithPagingAndSize(@PathVariable(name = "size") int size, @PathVariable(name = "pageNum") int pageNum) {
+        List<User> users = userService.getAllUsers(pageNum, size);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @GetMapping(value = "users/page/{pageNum}")
-    public ResponseEntity getUsersWithPage(@PathVariable(name = "pageNum") int pageNum ) {
-        List<User> users = userService.allUsers(pageNum, DEFAULT_SIZE);
+    public ResponseEntity getUsersWithPage(@PathVariable(name = "pageNum") int pageNum) {
+        List<User> users = userService.getAllUsers(pageNum, DEFAULT_SIZE);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -49,7 +49,7 @@ public class AdminRestControllerV1 {
     public ResponseEntity getPostUsersWithPage(@RequestBody Map<String, ?> json) {
         if (!json.containsKey("pageNum")) return new ResponseEntity(HttpStatus.BAD_REQUEST);
         int pageNum = (Integer) json.get("pageNum");
-        List<User> users = userService.allUsers(pageNum, DEFAULT_SIZE);
+        List<User> users = userService.getAllUsers(pageNum, DEFAULT_SIZE);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
@@ -57,7 +57,7 @@ public class AdminRestControllerV1 {
     public ResponseEntity<User> deleteUserById(@RequestBody Map<String, ?> json) {
         if (!json.containsKey("id")) return new ResponseEntity(HttpStatus.BAD_REQUEST);
         Long id = (Long) json.get("id");
-        User user = userService.findById(id);
+        User user = userService.getById(id);
         if (user == null)
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         userService.delete(id);
@@ -66,13 +66,13 @@ public class AdminRestControllerV1 {
 
     @PostMapping(value = "/users/update")
     public ResponseEntity updateUsers(@RequestBody List<User> users) {
-        Map response = processResponseForUsersList(users, user -> userService.update(user));
+        Map<String, List<String>> response = processResponseForUsersList(users, user -> userService.update(user));
         return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/users/register")
     public ResponseEntity registerUsers(@RequestBody List<User> users) {
-        Map response = processResponseForUsersList(users, user -> userService.register(user));
+        Map<String, List<String>> response = processResponseForUsersList(users, user -> userService.register(user));
         return ResponseEntity.ok(response);
     }
 
